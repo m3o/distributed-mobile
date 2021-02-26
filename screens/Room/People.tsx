@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavigationProp, RouteProp } from '@react-navigation/native';
-import { ScrollView, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { ScrollView, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { Colors, Fonts } from '../../globalStyles';
 
 interface Props {

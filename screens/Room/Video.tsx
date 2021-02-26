@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavigationProp } from '@react-navigation/native';
-import { View, Text, ScrollView, StyleSheet, Image, ImageSourcePropType, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Image, ImageSourcePropType, TouchableOpacity, Dimensions } from 'react-native';
 import Person1 from '../../assets/person1.png';
 import Person2 from '../../assets/person2.png';
 import Person3 from '../../assets/person3.png';
@@ -10,6 +10,8 @@ import { Fonts } from '../../globalStyles';
 interface Props {
   navigation: NavigationProp<{}>
 }
+
+const { width } = Dimensions.get('screen');
 
 export default class Video extends React.Component<Props> {
   render(): JSX.Element {
@@ -27,7 +29,7 @@ export default class Video extends React.Component<Props> {
     const onPress = () => this.props.navigation.navigate('Chat', { title: name })
 
     return <TouchableOpacity onPress={onPress} style={styles.person}>
-      <Image source={imgSrc} />
+      <Image style={styles.image} source={imgSrc} />
       <Text style={styles.name}>{name}</Text>
     </TouchableOpacity>
   }
@@ -48,6 +50,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 10,
     marginVertical: 10,
+  },
+  image: {
+    width: width / 3.8,
+    height: width / 3.8,
   },
   name: {
     fontFamily: Fonts.SemiBold,

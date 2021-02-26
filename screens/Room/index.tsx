@@ -36,7 +36,7 @@ export default class GroupScreen extends React.Component<Props, State> {
 
   componentDidMount() {
     this.props.navigation.setOptions({
-      header: () => <NavBar {...this.props} headerRight={this.renderHeaderRight} />,
+      header: () => <NavBar {...this.props} noShadow headerRight={this.renderHeaderRight} />,
     })
   }
 

@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "distributed-mobile",
-    "slug": "distributed-mobile",
+    "name": "Distributed",
+    "slug": "distributed",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -17,13 +17,14 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "package": "com.m3o.distributed"
     },
     "web": {
       "favicon": "./assets/favicon.png"

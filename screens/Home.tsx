@@ -29,7 +29,7 @@ export default class HomeScreen extends React.Component<Props, State> {
   }
 
   showProfileMenu() {
-    
+
   }
 
   renderHeaderRight(): JSX.Element {
@@ -178,7 +178,6 @@ const styles = StyleSheet.create({
   headerRightImage: {
     height: 30,
     width: 30,
-    marginLeft: -15,
     borderRadius: 15,
     borderColor: Colors.White,
     borderWidth: 1,
