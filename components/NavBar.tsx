@@ -1,0 +1,55 @@
+import React from 'react';
+import { NavigationProp, RouteProp } from '@react-navigation/native';
+import { SafeAreaView, View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { Fonts, Colors } from '../globalStyles';
+import Logo from '../assets/logo.png';
+import Back from '../assets/back.png';
+
+interface Props {
+  route: RouteProp<any,any>;
+  navigation: NavigationProp<{}>;
+  headerRight?: () => JSX.Element;
+}
+
+export default function NavBar (props: Props) {
+  var backButton: JSX.Element = <Image source={Logo} style={styles.icon} />;
+  if(props.navigation.canGoBack()) {
+    backButton = <TouchableOpacity onPress={props.navigation.goBack}>
+      <Image source={Back} style={styles.icon} />
+    </TouchableOpacity>
+  }
+
+  return <SafeAreaView style={styles.container}>
+    { backButton }
+    <View style={styles.lower}>
+      <Text style={styles.title}>{props.route.params?.title || 'Distributed'}</Text>
+      { props.headerRight ? props.headerRight() : null }
+    </View>
+  </SafeAreaView>
+}
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: Colors.White,
+    marginHorizontal: 20,
+    height: 160,
+  },
+  icon: {
+    resizeMode: 'contain',
+    width: 30,
+    height: 30,
+    marginBottom: 15,
+    marginTop: 10,
+  },
+  title: {
+    fontSize: 30,
+    fontFamily: Fonts.Bold,
+    flexGrow: 1,
+    flexShrink: 1,
+  },
+  lower: {
+    display: 'flex',
+    flexDirection: 'row',
+    marginBottom: 20,
+  }
+})
