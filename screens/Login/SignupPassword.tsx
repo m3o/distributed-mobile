@@ -2,10 +2,15 @@ import React, { createRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { NavigationProp, RouteProp } from '@react-navigation/native';
 import Layout, { Styles } from './Layout';
+import API from '../../api';
+import { Login, User } from '../../store/user';
+import * as SecureStore from 'expo-secure-store';
+import { connect } from 'react-redux';
 
 interface Props {
   route: RouteProp<any, any>
   navigation: NavigationProp<{}>
+  login: (user: User) => void
 }
 
 interface State {
@@ -18,7 +23,7 @@ interface State {
   error?: string;
 }
 
-export default class SignupScreen extends React.Component<Props,State> {
+class SignupScreen extends React.Component<Props,State> {
   readonly passwordInput: React.RefObject<TextInput>;
   readonly confirmationInput: React.RefObject<TextInput>;
   
@@ -38,6 +43,31 @@ export default class SignupScreen extends React.Component<Props,State> {
     }
 
     this.setState({ loading: true });
+
+    const payload = {
+      first_name: this.state.firstName, 
+      last_name: this.state.lastName,
+      email: this.state.email,
+      password: this.state.password,
+    }
+
+    API.post('signup', payload)
+      .then(rsp => {
+        this.props.login(rsp.data.user)
+        SecureStore.setItemAsync('token', rsp.data.token);
+      })
+      .catch(err => {
+        switch(err.response?.status) {
+          case undefined:
+            this.setState({ error: `Unexpected error: ${err}`, loading: false })
+            break
+          case 400:
+            this.setState({ error: `${err.response.data?.error}`, loading: false })
+            break
+          default:
+            this.setState({ error: `Unexpected error, status: ${err.response.status}`, loading: false })
+          }
+        })
   }
 
   valid(): boolean {
@@ -86,3 +116,11 @@ export default class SignupScreen extends React.Component<Props,State> {
     </Layout>
   }
 }
+
+function mapStateToDispatch(dispatch: Function): any {
+  return {
+    login: (user: any) => dispatch(Login(user)),
+  }
+}
+
+export default connect(null, mapStateToDispatch)(SignupScreen);

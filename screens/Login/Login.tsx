@@ -1,11 +1,16 @@
 import React, { createRef } from 'react';
+import * as SecureStore from 'expo-secure-store';
+import { connect } from 'react-redux';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { NavigationProp, RouteProp } from '@react-navigation/native';
 import Layout, { Styles } from './Layout';
+import { Login } from '../../store/user';
+import API from '../../api';
 
 interface Props {
   route: RouteProp<any, any>
   navigation: NavigationProp<{}>
+  login: (user: any) => void
 }
 
 interface State {
@@ -15,7 +20,7 @@ interface State {
   error?: string;
 }
 
-export default class LoginScreen extends React.Component<Props,State> {
+class LoginScreen extends React.Component<Props,State> {
   readonly passwordInput: React.RefObject<TextInput>;
   
   constructor(props: Props) {
@@ -29,9 +34,24 @@ export default class LoginScreen extends React.Component<Props,State> {
     if(this.state.loading) return;
     this.setState({ loading: true });
 
-    setTimeout(() => {
-      this.setState({ error: "Incorrect email", loading: false })
-    }, 500)
+    const { email, password } = this.state;
+    API.post('login', { email, password })
+      .then(rsp => {
+        this.props.login(rsp.data.user)
+        SecureStore.setItemAsync('token', rsp.data.token);
+      })
+      .catch(err => {
+        switch(err.response?.status) {
+        case undefined:
+          this.setState({ error: `Unexpected error: ${err}`, loading: false })
+          break
+        case 400:
+          this.setState({ error: `${err.response.data?.error}`, loading: false })
+          break
+        default:
+          this.setState({ error: `Unexpected error, status: ${err.response.status}`, loading: false })
+        }
+      })
   }
 
   render(): JSX.Element {
@@ -77,3 +97,11 @@ export default class LoginScreen extends React.Component<Props,State> {
     </Layout>
   }
 }
+
+function mapStateToDispatch(dispatch: Function): any {
+  return {
+    login: (user: any) => dispatch(Login(user)),
+  }
+}
+
+export default connect(null, mapStateToDispatch)(LoginScreen);

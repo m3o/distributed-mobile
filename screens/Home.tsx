@@ -1,6 +1,9 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import { NavigationProp, RouteProp } from '@react-navigation/native';
 import { View, ScrollView, Text, StyleSheet, TouchableOpacity, Image, RefreshControl } from 'react-native';
+import { connectActionSheet, ActionSheetOption } from '@expo/react-native-action-sheet';
+import * as SecureStore from 'expo-secure-store';
 import { Colors, Fonts } from '../globalStyles';
 import Profile from '../assets/profile.png';
 import Person1 from '../assets/person1.png';
@@ -8,17 +11,20 @@ import Person2 from '../assets/person2.png';
 import Person3 from '../assets/person3.png';
 import Person4 from '../assets/person4.png';
 import NavBar from '../components/NavBar';
+import { Logout } from '../store/user';
 
 interface Props {
   route: RouteProp<any, any>
   navigation: NavigationProp<{}>
+  showActionSheetWithOptions: (opts: ActionSheetOption, callback: ((i: number) => void)) => void
+  logout: Function
 }
 
 interface State {
   refreshing: boolean;
 }
 
-export default class HomeScreen extends React.Component<Props, State> {
+class HomeScreen extends React.Component<Props, State> {
   readonly state: State = { refreshing: false }
 
   constructor(props: Props) {
@@ -29,7 +35,20 @@ export default class HomeScreen extends React.Component<Props, State> {
   }
 
   showProfileMenu() {
-
+    this.props.showActionSheetWithOptions(
+      {
+        options: ['Edit Profile', 'Logout', 'Cancel'],
+        destructiveButtonIndex: 1,
+        cancelButtonIndex: 2,
+      },
+      idx => {
+        switch(idx) {
+        case 1:
+          SecureStore.deleteItemAsync('token')
+          this.props.logout()
+        }
+      },
+    )
   }
 
   renderHeaderRight(): JSX.Element {
@@ -115,6 +134,14 @@ export default class HomeScreen extends React.Component<Props, State> {
     </ScrollView>
   }
 }
+
+function mapDispatchToProps(dispatch: Function): any {
+  return {
+    logout: () => dispatch(Logout()),
+  }
+}
+
+export default connectActionSheet(connect(null, mapDispatchToProps)(HomeScreen))
 
 const styles = StyleSheet.create({
   sectionHeader: {
