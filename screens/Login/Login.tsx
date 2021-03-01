@@ -67,7 +67,7 @@ export default class LoginScreen extends React.Component<Props,State> {
         <Text style={Styles.ButtonText}>{loading ? 'Logging in' : 'Login'}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={Styles.SubAction}>
+      <TouchableOpacity style={Styles.SubAction}  onPress={() => this.props.navigation.navigate('Signup', { email })}>
         <Text style={Styles.SubActionText}>Don’t have an account?</Text>
       </TouchableOpacity>
 

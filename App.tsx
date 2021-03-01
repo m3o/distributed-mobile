@@ -7,6 +7,8 @@ import LoginScreen from './screens/Login/Login';
 import ForgotPasswordScreen from './screens/Login/ForgotPassword';
 import CodeInputScreen from './screens/Login/CodeInput';
 import NewPasswordScreen from './screens/Login/NewPassword';
+import SignupScreen from './screens/Login/Signup';
+import SignupPasswordScreen from './screens/Login/SignupPassword';
 import HomeScreen from './screens/Home';
 import GroupScreen from './screens/Group';
 import RoomScreen from './screens/Room';
@@ -32,6 +34,8 @@ function App() {
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
         <Stack.Screen name="CodeInput" component={CodeInputScreen} />
         <Stack.Screen name="NewPassword" component={NewPasswordScreen} />
+        <Stack.Screen name="Signup" component={SignupScreen} />
+        <Stack.Screen name="SignupPassword" component={SignupPasswordScreen} />
       </Stack.Navigator>
       {/* <Stack.Navigator>
         <Stack.Screen name="Home" component={HomeScreen} />
