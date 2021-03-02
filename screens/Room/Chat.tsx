@@ -1,11 +1,13 @@
 import React from 'react';
-import { View, ScrollView, Image, Platform, StyleSheet, TextInput, SafeAreaView, KeyboardAvoidingView, Dimensions, LayoutChangeEvent, Text } from 'react-native';
+import { View, flatList, Image, Platform, StyleSheet, TextInput, SafeAreaView, KeyboardAvoidingView, Dimensions, LayoutChangeEvent, Text, FlatList } from 'react-native';
 import { Colors, Fonts } from '../../globalStyles';
 import Person1 from '../../assets/person1.png';
 import Person2 from '../../assets/person2.png';
+import { Message } from '../../store/groups';
 
 interface Props {
   group?: boolean;
+  messages: Message[];
 }
 
 interface State {
@@ -13,7 +15,7 @@ interface State {
   heightDiff: number;
 }
 
-const { height, width } = Dimensions.get('screen');
+const { width } = Dimensions.get('screen');
 
 export default class Chat extends React.Component<Props,State> {
   readonly state: State = { input: '', heightDiff: 64 };
@@ -21,83 +23,69 @@ export default class Chat extends React.Component<Props,State> {
   constructor(props: Props) {
     super(props);
     this.onLayout = this.onLayout.bind(this);
+    this.renderMessage = this.renderMessage.bind(this);
   }
   
   onLayout(e: LayoutChangeEvent) {
-    this.setState({ heightDiff: height - e.nativeEvent.layout.height })
   }
 
   render(): JSX.Element {
+    const messages = this.props.messages?.sort((a,b) => a.sent_at! < b.sent_at! ? 1 : -1);
+
     return(
-      <View style={styles.container} onLayout={this.onLayout}>
-        <KeyboardAvoidingView
-          style={styles.container}
-          keyboardVerticalOffset={this.state.heightDiff}
-          behavior={Platform.OS == 'ios' ? 'padding' : 'height'} >
+      <View 
+        style={styles.container}
+        onLayout={this.onLayout}>
 
-          <ScrollView style={styles.scrollView}>
-            { this.props.group ? 
-              <View style={styles.messageContainer}>
-                <Image style={styles.messageIcon} source={Person1} />
-                <View>
-                  <Text style={styles.messageSender}>Shane Rowe</Text>
-                  <View style={[styles.messageTextContainer, styles.messageTextContainerRecipient]}>
-                    <Text style={styles.messageText}>Dave oh my God! It's out of ice! Like some outer space!</Text>
-                  </View>
-                </View>
-              </View> :
-              <View style={[styles.messageTextContainer, styles.messageTextContainerRecipient]}>
-                <Text style={styles.messageText}>Dave oh my God! It's out of ice! Like some outer space!</Text>
-              </View>
-            }
-
-            <View style={[styles.messageTextContainer, styles.messageTextContainerSender]}>
-              <Text style={[styles.messageText, styles.messageTextSender]}>Dave oh my God! It's out of ice! Like some outer space!</Text>
-            </View>
-
-            { this.props.group ? 
-              <View style={styles.messageContainer}>
-                <Image style={styles.messageIcon} source={Person2} />
-                <View>
-                  <Text style={styles.messageSender}>Milton Aaron</Text>
-                  <View style={[styles.messageTextContainer, styles.messageTextContainerRecipient]}>
-                    <Text style={styles.messageText}>Dave this could mean the end of the bana daquiri we know</Text>
-                  </View>
-                </View>
-              </View> : 
-              <View style={[styles.messageTextContainer, styles.messageTextContainerRecipient]}>
-                <Text style={styles.messageText}>Dave this could mean the end of the bana daquiri we know</Text>
-              </View>
-            }
-          </ScrollView>
-          
-          <View style={styles.inputContainer}>
-            <SafeAreaView>
-              <TextInput
-                autoFocus
-                style={styles.input}
-                value={this.state.input}
-                returnKeyType='send'
-                placeholder='Send a message' 
-                onChangeText={input => this.setState({ input })} />
-              </SafeAreaView>
-          </View>
-        </KeyboardAvoidingView>
+        <FlatList
+          data={messages} 
+          inverted={true}
+          keyExtractor={m => m.id}
+          renderItem={this.renderMessage} />
+        
+        <View style={styles.inputContainer}>
+          <SafeAreaView>
+            <TextInput
+              style={styles.input}
+              value={this.state.input}
+              returnKeyType='send'
+              placeholder='Send a message' 
+              onChangeText={input => this.setState({ input })} />
+            </SafeAreaView>
+        </View>
       </View>
     );
+  }
+
+  renderMessage({ item }: { item: Message }): JSX.Element {
+    if(item.author?.current_user) {
+      return <View key={item.id} style={[styles.messageTextContainer, styles.messageTextContainerSender]}>
+        <Text style={[styles.messageText, styles.messageTextSender]}>{item.text}</Text>
+      </View>
+    }
+
+    if(this.props.group) {
+      return <View key={item.id} style={styles.messageContainer}>
+        <Image style={styles.messageIcon} source={Person1} />
+        <View>
+          <Text style={styles.messageSender}>{item.author?.first_name} {item.author?.last_name}</Text>
+          <View style={[styles.messageTextContainer, styles.messageTextContainerRecipient]}>
+            <Text style={styles.messageText}>{item.text}</Text>
+          </View>
+        </View>
+      </View>
+    }
+
+    return <View key={item.id} style={[styles.messageTextContainer, styles.messageTextContainerRecipient]}>
+      <Text style={styles.messageText}>{item.text}</Text>
+    </View>
   }
 }
 const styles = StyleSheet.create({
   container: {
-    display: 'flex',
-    flexGrow: 1,
-    backgroundColor: Colors.White,
-  },
-  scrollView: {
-    flexGrow: 1,
     backgroundColor: Colors.Background,
-    display: 'flex',
-    flexDirection: 'column-reverse',
+    flexGrow: 1,
+    height: 1, // required for a reason I don't understand
   },
   inputContainer: {
     backgroundColor: Colors.White,

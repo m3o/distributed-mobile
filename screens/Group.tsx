@@ -1,4 +1,5 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import { NavigationProp, RouteProp } from '@react-navigation/native';
 import { View, ScrollView, Text, StyleSheet, TouchableOpacity, Image, RefreshControl } from 'react-native';
 import { Colors, Fonts } from '../globalStyles';
@@ -7,34 +8,51 @@ import Person2 from '../assets/person2.png';
 import Person3 from '../assets/person3.png';
 import Person4 from '../assets/person4.png';
 import NavBar from '../components/NavBar';
+import { Group, SetGroup } from '../store/groups';
+import { GlobalState } from '../store';
+import API from '../api';
 
 interface Props {
   route: RouteProp<any,any>
   navigation: NavigationProp<{}>
+  group: Group;
+  setGroup: (group: Group) => void
 }
 
 interface State {
-  refreshing: boolean;
+  loading: boolean;
 }
 
-export default class GroupScreen extends React.Component<Props, State> {
-  readonly state: State = { refreshing: false }
+class GroupScreen extends React.Component<Props, State> {
+  readonly state: State = { loading: false }
 
   constructor(props: Props) {
     super(props)
-    this.onRefresh = this.onRefresh.bind(this)
+    this.loadData = this.loadData.bind(this)
     this.renderHeaderRight = this.renderHeaderRight.bind(this)
   }
 
   componentDidMount() {
+    this.loadData()
     this.props.navigation.setOptions({
-      header: () => <NavBar {...this.props} headerRight={this.renderHeaderRight} />,
+      header: () => <NavBar title={this.props.group.name} {...this.props} headerRight={this.renderHeaderRight} />,
     })
   }
 
-  onRefresh() {
-    this.setState({ refreshing: true })
-    setTimeout(() => this.setState({ refreshing: false }), 700)
+  loadData() {
+    this.setState({ loading: true })
+
+    API.get('groups/'+ this.props.route.params!.id)
+      .then(rsp => {
+        this.props.setGroup(rsp.data)
+      })
+      .catch(err => {
+        console.error(`Error loading group: ${err}`)
+      })
+      .finally(() => {
+        this.setState({ loading: false })
+      })
+
   }
 
   renderHeaderRight(): JSX.Element {
@@ -47,48 +65,52 @@ export default class GroupScreen extends React.Component<Props, State> {
   }
   
   render() {
-    const onRoomPress = (title: string) => this.props.navigation.navigate('Room', { title })
-    const onChatPress = (title: string) => this.props.navigation.navigate('Chat', { title })
-
-    const refreshControl = <RefreshControl onRefresh={this.onRefresh} refreshing={this.state.refreshing} size={20} />
+    const { id, threads, members } = this.props.group;
+    
+    const refreshControl = <RefreshControl onRefresh={this.loadData} refreshing={this.state.loading} size={20} />
     return <ScrollView refreshControl={refreshControl}>
       <Text style={styles.sectionHeader}>🛋️ Rooms</Text>
-      
-      <TouchableOpacity onPress={() => onRoomPress('Kitchen')} style={[styles.row, { borderTopWidth: 1 }]}>
-        <Text style={styles.rowTitle}>Kitchen</Text>
-        <Text style={styles.rowSubtitle}>12 members online</Text>
-      </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => onRoomPress('Office')} style={styles.row}>
-        <Text style={styles.rowTitle}>Office</Text>
-        <Text style={styles.rowSubtitle}>2 members online</Text>
-      </TouchableOpacity>
+      { threads?.map((t,i) => {
+        const onClick = () => this.props.navigation.navigate('Room', { group_id: id, thread_id: t.id })
 
-      <TouchableOpacity onPress={() => onRoomPress('War Room')} style={styles.row}>
-        <Text style={styles.rowTitle}>War Room</Text>
-        <Text style={styles.rowSubtitle}>No members online</Text>
-      </TouchableOpacity>
+        return(
+          <TouchableOpacity onPress={onClick} style={[styles.row, { borderTopWidth: i === 0 ? 1 : 0 }]}>
+            <Text style={styles.rowTitle}>{t.topic}</Text>
+            <Text style={styles.rowSubtitle}>12 members online</Text>
+          </TouchableOpacity>
+        )
+      }) }
       
       <Text style={styles.sectionHeader}>👨‍👩‍👦 People</Text>
-      
-      <TouchableOpacity onPress={() => onChatPress('Asim Aslam')} style={[styles.row, { borderTopWidth: 1 }]}>
-        <Text style={styles.rowTitle}>Asim Aslam</Text>
-      </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => onChatPress('Dom Wong')} style={styles.row}>
-        <Text style={styles.rowTitle}>Dom Wong</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => onChatPress('János Dobronszki')} style={styles.row}>
-        <Text style={styles.rowTitle}>János Dobronszki</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => onChatPress('Chris H')} style={styles.row}>
-        <Text style={styles.rowTitle}>Chris H</Text>
-      </TouchableOpacity>
+      { members?.filter(u => !u.current_user)?.map((m,i) => {
+        const onClick = () => this.props.navigation.navigate('Chat', { group_id: id, user_id: m.id })
+        
+        return(
+          <TouchableOpacity onPress={onClick} style={[styles.row, { borderTopWidth: i === 0 ? 1 : 0 }]}>
+            <Text style={styles.rowTitle}>{m.first_name} {m.last_name}</Text>
+          </TouchableOpacity>
+        )
+      }) }
     </ScrollView>
   }
 }
+
+function mapStateToProps(state: GlobalState, ownProps: Props): any {
+  const id = ownProps.route.params!.id
+  return {
+    group: state.groups.groups!.find(g => g.id === id),
+  }
+}
+
+function mapDispatchToProps(dispatch: Function): any {
+  return {
+    setGroup: (group: Group) => dispatch(SetGroup(group)),
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(GroupScreen)
 
 const styles = StyleSheet.create({
   headerRight: {

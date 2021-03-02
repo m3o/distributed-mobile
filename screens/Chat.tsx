@@ -1,22 +1,25 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import { NavigationProp, RouteProp } from '@react-navigation/native';
 import { View, StyleSheet, Image } from 'react-native';
 import { Colors } from '../globalStyles';
 import Person1 from '../assets/person1.png';
 import NavBar from '../components/NavBar';
 import Chat from './Room/Chat';
+import { GlobalState } from '../store';
+import { User } from '../store/user';
 
 interface Props {
   route: RouteProp<any,any>
   navigation: NavigationProp<{}>
+  user: User
 }
 
 interface State {
   refreshing: boolean;
 }
 
-export default class ChatScreen extends React.Component<Props, State> {
-
+class ChatScreen extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
     this.renderHeaderRight = this.renderHeaderRight.bind(this)
@@ -24,7 +27,7 @@ export default class ChatScreen extends React.Component<Props, State> {
 
   componentDidMount() {
     this.props.navigation.setOptions({
-      header: () => <NavBar {...this.props} headerRight={this.renderHeaderRight} />,
+      header: () => <NavBar {...this.props} title={this.props.user.first_name} headerRight={this.renderHeaderRight} />,
     })
   }
 
@@ -43,6 +46,15 @@ export default class ChatScreen extends React.Component<Props, State> {
     return <Chat />
   }
 }
+
+function mapStateToProps(state: GlobalState, ownProps: Props): any {
+  const { group_id, user_id } = ownProps.route.params!;
+  const group = state.groups.groups!.find(g => g.id === group_id);
+  const user = group!.members!.find(t => t.id === user_id);
+  return { group, user }
+}
+
+export default connect(mapStateToProps)(ChatScreen);
 
 const styles = StyleSheet.create({
   headerRight: {

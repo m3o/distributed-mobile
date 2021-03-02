@@ -7,6 +7,7 @@ import Logo from '../assets/logo.png';
 import Back from '../assets/back.png';
 
 interface Props {
+  title?: string
   noShadow?: boolean;
   route: RouteProp<any,any>;
   navigation: NavigationProp<{}>;
@@ -24,7 +25,7 @@ export default function NavBar (props: Props) {
   return <SafeAreaView style={[styles.container, props.noShadow ? { elevation: 0 } : {}]}>
     { backButton }
     <View style={styles.lower}>
-      <Text style={styles.title}>{props.route.params?.title || 'Distributed'}</Text>
+      <Text style={styles.title}>{props.title || props.route.params?.title || 'Distributed'}</Text>
       { props.headerRight ? props.headerRight() : null }
     </View>
   </SafeAreaView>

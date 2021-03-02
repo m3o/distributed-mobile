@@ -1,4 +1,5 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import { NavigationProp, RouteProp } from '@react-navigation/native';
 import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { Colors } from '../../globalStyles';
@@ -16,17 +17,21 @@ import NavBar from '../../components/NavBar';
 import Chat from './Chat';
 import Video from './Video';
 import People from './People';
+import { GlobalState } from '../../store';
+import { Group, Thread } from '../../store/groups';
 
 interface Props {
   route: RouteProp<any,any>
   navigation: NavigationProp<{}>
+  group: Group
+  thread: Thread
 }
 
 interface State {
   screen: 'chat' | 'video' | 'people';
 }
 
-export default class GroupScreen extends React.Component<Props, State> {
+class RoomScreen extends React.Component<Props, State> {
   readonly state: State = { screen: 'chat' }
 
   constructor(props: Props) {
@@ -36,7 +41,7 @@ export default class GroupScreen extends React.Component<Props, State> {
 
   componentDidMount() {
     this.props.navigation.setOptions({
-      header: () => <NavBar {...this.props} noShadow headerRight={this.renderHeaderRight} />,
+      header: () => <NavBar {...this.props} noShadow title={this.props.thread.topic} headerRight={this.renderHeaderRight} />,
     })
   }
 
@@ -77,7 +82,7 @@ export default class GroupScreen extends React.Component<Props, State> {
     let inner = <View />
     switch(this.state.screen) {
     case 'chat':
-      inner = <Chat group/>;
+      inner = <Chat group messages={this.props.thread.messages || []} />;
       break;
     case 'video':
       inner = <Video navigation={this.props.navigation} />;
@@ -93,6 +98,15 @@ export default class GroupScreen extends React.Component<Props, State> {
     </View>
   }
 }
+
+function mapStateToProps(state: GlobalState, ownProps: Props): any {
+  const { group_id, thread_id } = ownProps.route.params!;
+  const group = state.groups.groups!.find(g => g.id === group_id)
+  const thread = group!.threads!.find(t => t.id === thread_id);
+  return { group, thread }
+}
+
+export default connect(mapStateToProps)(RoomScreen)
 
 const styles = StyleSheet.create({
   headerRight: {
@@ -110,11 +124,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   subheaderContainer: {
-    height: 60,
     backgroundColor: Colors.White,
     borderColor: Colors.Border,
     borderTopWidth: 1,
     borderBottomWidth: 1,
+    height: 55,
     display: 'flex',
     flexDirection: 'row',
   },
@@ -126,7 +140,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 3,
   },
   subheaderImage: {
-    width: 30,
+    width: 20,
     height: 20,
     resizeMode: 'contain',
     marginTop: 'auto',
@@ -135,7 +149,6 @@ const styles = StyleSheet.create({
     marginRight: 'auto',
   },
   container: {
-    display: 'flex',
     flexGrow: 1,
   },
 })
