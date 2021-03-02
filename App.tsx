@@ -22,9 +22,8 @@ import ChatScreen from './screens/Chat';
 
 // Utilities
 import store, { GlobalState } from './store';
-import api from './api';
-import API from './api';
 import { Login, User } from './store/user';
+import API from './api';
 
 export default function Wrapper() {
   return <Provider store={store}>

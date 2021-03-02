@@ -1,26 +1,39 @@
 import React, { createRef } from 'react';
+import { connect } from 'react-redux';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { NavigationProp, RouteProp } from '@react-navigation/native';
 import Layout, { Styles } from './Layout';
+import * as SecureStore from 'expo-secure-store';
+import { Login, User } from '../../store/user';
+import API from '../../api';
 
 interface Props {
   route: RouteProp<any, any>
   navigation: NavigationProp<{}>
+  login: (user: User) => void
 }
 
 interface State {
+  email: string;
+  code: string;
   confirmation: string;
   password: string;
   loading: boolean;
   error?: string;
 }
 
-export default class NewPasswordScreen extends React.Component<Props,State> {
+class NewPasswordScreen extends React.Component<Props,State> {
   readonly confirmationInput: React.RefObject<TextInput>;
   
   constructor(props: Props) {
     super(props);
-    this.state = { confirmation: '', password: '', loading: false };
+    this.state = {
+      email: props.route.params!.email,
+      code: props.route.params!.code,
+      confirmation: '',
+      password: '',
+      loading: false,
+    };
     this.confirmationInput = createRef<TextInput>();
     this.onSubmit = this.onSubmit.bind(this);
   }
@@ -33,6 +46,24 @@ export default class NewPasswordScreen extends React.Component<Props,State> {
     }
 
     this.setState({ loading: true });
+    API.post('verifyPasswordReset', { email: this.state.email, password: this.state.password, code: this.state.code })
+    .then(rsp => {
+      this.props.login(rsp.data.user)
+      SecureStore.setItemAsync('token', rsp.data.token);
+      this.setState({ loading: false, error: undefined })
+    })
+    .catch(err => {
+      switch(err.response?.status) {
+        case undefined:
+          this.setState({ error: `Unexpected error: ${err}`, loading: false })
+          break
+        case 400:
+          this.setState({ error: `${err.response.data?.error}`, loading: false })
+          break
+        default:
+          this.setState({ error: `Unexpected error, status: ${err.response.status}`, loading: false })
+        }
+    })
   }
 
   render(): JSX.Element {
@@ -75,3 +106,11 @@ export default class NewPasswordScreen extends React.Component<Props,State> {
     </Layout>
   }
 }
+
+function mapDispatchToProps(dispatch: Function): any {
+  return {
+    login: (user: User) => dispatch(Login(user)),
+  }
+}
+
+export default connect(null, mapDispatchToProps)(NewPasswordScreen);

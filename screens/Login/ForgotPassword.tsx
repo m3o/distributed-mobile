@@ -2,6 +2,7 @@ import React, { createRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { NavigationProp, RouteProp } from '@react-navigation/native';
 import Layout, { Styles } from './Layout';
+import API from '../../api';
 
 interface Props {
   route: RouteProp<any, any>
@@ -25,10 +26,23 @@ export default class ForgotPasswordScreen extends React.Component<Props,State> {
     if(this.state.loading) return;
     this.setState({ loading: true, error: undefined });
 
-    setTimeout(() => {
-      this.setState({ loading: false, error: undefined })
-      this.props.navigation.navigate('CodeInput', { email: this.state.email })
-    }, 500)
+    API.post('sendPasswordReset', { email: this.state.email })
+      .then(() => {
+        this.props.navigation.navigate('CodeInput', { email: this.state.email })
+        this.setState({ loading: false, error: undefined })
+      })
+      .catch((err) => {
+        switch(err.response?.status) {
+          case undefined:
+            this.setState({ error: `Unexpected error: ${err}`, loading: false })
+            break
+          case 400:
+            this.setState({ error: `${err.response.data?.error}`, loading: false })
+            break
+          default:
+            this.setState({ error: `Unexpected error, status: ${err.response.status}`, loading: false })
+          }
+      })
   }
 
   render(): JSX.Element {
