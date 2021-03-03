@@ -87,10 +87,12 @@ class HomeScreen extends React.Component<Props, State> {
   }
   
   render() {
+    const groups = this.props.groups?.sort((a,b) => a.name > b.name ? 1 : -1)
+
     const refreshControl = <RefreshControl onRefresh={this.loadData} refreshing={this.state.loading} size={20} />
     return <ScrollView refreshControl={refreshControl}>
       <Text style={styles.sectionHeader}>Groups</Text>
-      { this.props.groups?.map(this.renderGroup) }
+      { groups?.map(this.renderGroup) }
       
       <TouchableOpacity style={styles.row}>
         <Text style={styles.rowNewTitle}>Create a new group</Text>

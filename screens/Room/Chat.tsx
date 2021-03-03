@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, flatList, Image, Platform, StyleSheet, TextInput, SafeAreaView, KeyboardAvoidingView, Dimensions, LayoutChangeEvent, Text, FlatList } from 'react-native';
+import { View, Image, Platform, StyleSheet, TextInput, SafeAreaView, KeyboardAvoidingView, Dimensions, Text, FlatList } from 'react-native';
 import { Colors, Fonts } from '../../globalStyles';
 import Person1 from '../../assets/person1.png';
 import Person2 from '../../assets/person2.png';
@@ -22,20 +22,17 @@ export default class Chat extends React.Component<Props,State> {
 
   constructor(props: Props) {
     super(props);
-    this.onLayout = this.onLayout.bind(this);
     this.renderMessage = this.renderMessage.bind(this);
-  }
-  
-  onLayout(e: LayoutChangeEvent) {
   }
 
   render(): JSX.Element {
     const messages = this.props.messages?.sort((a,b) => a.sent_at! < b.sent_at! ? 1 : -1);
 
     return(
-      <View 
+      <KeyboardAvoidingView 
         style={styles.container}
-        onLayout={this.onLayout}>
+        keyboardVerticalOffset={160}
+        behavior={Platform.OS === "ios" ? "padding" : null} >
 
         <FlatList
           data={messages} 
@@ -53,7 +50,7 @@ export default class Chat extends React.Component<Props,State> {
               onChangeText={input => this.setState({ input })} />
             </SafeAreaView>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     );
   }
 
@@ -84,8 +81,7 @@ export default class Chat extends React.Component<Props,State> {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: Colors.Background,
-    flexGrow: 1,
-    height: 1, // required for a reason I don't understand
+    flex: 1,
   },
   inputContainer: {
     backgroundColor: Colors.White,

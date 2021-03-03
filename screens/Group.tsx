@@ -75,7 +75,7 @@ class GroupScreen extends React.Component<Props, State> {
         const onClick = () => this.props.navigation.navigate('Room', { group_id: id, thread_id: t.id })
 
         return(
-          <TouchableOpacity onPress={onClick} style={[styles.row, { borderTopWidth: i === 0 ? 1 : 0 }]}>
+          <TouchableOpacity key={t.id} onPress={onClick} style={[styles.row, { borderTopWidth: i === 0 ? 1 : 0 }]}>
             <Text style={styles.rowTitle}>{t.topic}</Text>
             <Text style={styles.rowSubtitle}>12 members online</Text>
           </TouchableOpacity>
@@ -88,7 +88,7 @@ class GroupScreen extends React.Component<Props, State> {
         const onClick = () => this.props.navigation.navigate('Chat', { group_id: id, user_id: m.id })
         
         return(
-          <TouchableOpacity onPress={onClick} style={[styles.row, { borderTopWidth: i === 0 ? 1 : 0 }]}>
+          <TouchableOpacity key={m.id} onPress={onClick} style={[styles.row, { borderTopWidth: i === 0 ? 1 : 0 }]}>
             <Text style={styles.rowTitle}>{m.first_name} {m.last_name}</Text>
           </TouchableOpacity>
         )
