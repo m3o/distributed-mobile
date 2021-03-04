@@ -1,38 +1,58 @@
-import React from 'react';
-import { View, Image, Platform, StyleSheet, TextInput, SafeAreaView, KeyboardAvoidingView, Dimensions, Text, FlatList } from 'react-native';
+import React, { createRef } from 'react';
+import { View, Image, Platform, StyleSheet, TextInput, SafeAreaView, KeyboardAvoidingView, Dimensions, Text, FlatList, Keyboard, NativeSyntheticEvent, TextInputSubmitEditingEventData } from 'react-native';
 import { Colors, Fonts } from '../../globalStyles';
 import Person1 from '../../assets/person1.png';
-import Person2 from '../../assets/person2.png';
 import { Message } from '../../store/groups';
 
 interface Props {
   group?: boolean;
   messages: Message[];
+  sendMessage: (msg: string) => void;
 }
 
 interface State {
   input: string;
-  heightDiff: number;
 }
 
 const { width } = Dimensions.get('screen');
 
 export default class Chat extends React.Component<Props,State> {
-  readonly state: State = { input: '', heightDiff: 64 };
+  readonly inputRef: React.RefObject<TextInput>;
+  readonly state: State = { input: '' };
 
   constructor(props: Props) {
     super(props);
+    this.onSubmit = this.onSubmit.bind(this);
     this.renderMessage = this.renderMessage.bind(this);
+    this.inputRef = createRef<TextInput>();
+  }
+
+  onSubmit(e: NativeSyntheticEvent<TextInputSubmitEditingEventData>) {
+    e.preventDefault()
+
+    if(this.state.input.length === 0) {
+      Keyboard.dismiss();
+      return;
+    }
+
+    this.props.sendMessage(this.state.input);
+    this.setState({ input: '' });
   }
 
   render(): JSX.Element {
-    const messages = this.props.messages?.sort((a,b) => a.sent_at! < b.sent_at! ? 1 : -1);
+    const unique = Array.from(this.props.messages.reduce((a,c)=>{ a.set(c.id, c); return a; }, new Map()).values())
+    
+    const messages = unique.sort((a,b) => {
+      const asentat = typeof(a.sent_at) === 'string' ? Date.parse(a.sent_at) : a.sent_at!;
+      const bsentat = typeof(b.sent_at) === 'string' ? Date.parse(b.sent_at) : b.sent_at!;
+      return asentat < bsentat ? 1 : -1
+    });
 
     return(
       <KeyboardAvoidingView 
         style={styles.container}
         keyboardVerticalOffset={160}
-        behavior={Platform.OS === "ios" ? "padding" : null} >
+        behavior={Platform.OS === "ios" ? "padding" : undefined}>
 
         <FlatList
           data={messages} 
@@ -43,10 +63,13 @@ export default class Chat extends React.Component<Props,State> {
         <View style={styles.inputContainer}>
           <SafeAreaView>
             <TextInput
+              ref={this.inputRef}
               style={styles.input}
               value={this.state.input}
               returnKeyType='send'
+              blurOnSubmit={false}
               placeholder='Send a message' 
+              onSubmitEditing={this.onSubmit}
               onChangeText={input => this.setState({ input })} />
             </SafeAreaView>
         </View>

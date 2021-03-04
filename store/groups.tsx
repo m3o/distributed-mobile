@@ -48,14 +48,14 @@ export function SetGroup(group: Group): Action {
 export default function userReducer(state: State = {}, action: Action) {
   switch (action.type) {
     case 'groups.set.batch':
-      return { ...state, groups: action.payload }
+      return { ...state, groups: (action.payload as Group[]).sort((a,b) => a.id > b.id ? 1 : - 1) }
     case 'groups.set':
       return { 
         ...state, 
         groups: [
           ...state.groups!.filter(g => g.id !== (action.payload as Group).id),
-          action.payload,
-        ]
+          action.payload as Group,
+        ].sort((a,b) => a.id > b.id ? 1 : - 1)
       }
     case 'user.logout':
       return { ...state, groups: undefined }

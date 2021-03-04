@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { NavigationProp, RouteProp } from '@react-navigation/native';
-import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
 import { Colors } from '../../globalStyles';
 import Person1 from '../../assets/person1.png';
 import Person2 from '../../assets/person2.png';
@@ -18,11 +18,14 @@ import Chat from './Chat';
 import Video from './Video';
 import People from './People';
 import { GlobalState } from '../../store';
-import { Group, Thread } from '../../store/groups';
+import { Group, SetGroup, Thread } from '../../store/groups';
+import API from '../../api';
+import { v4 as uuid } from 'uuid';
 
 interface Props {
   route: RouteProp<any,any>
   navigation: NavigationProp<{}>
+  updateGroup: (group: Group) => void
   group: Group
   thread: Thread
 }
@@ -36,6 +39,7 @@ class RoomScreen extends React.Component<Props, State> {
 
   constructor(props: Props) {
     super(props)
+    this.sendMessage = this.sendMessage.bind(this)
     this.renderHeaderRight = this.renderHeaderRight.bind(this)
   }
 
@@ -43,6 +47,60 @@ class RoomScreen extends React.Component<Props, State> {
     this.props.navigation.setOptions({
       header: () => <NavBar {...this.props} noShadow title={this.props.thread.topic} headerRight={this.renderHeaderRight} />,
     })
+  }
+
+  componentDidUpdate(prevProps: Props) {
+    if(prevProps.thread.topic !== this.props.thread.topic) {
+      this.props.navigation.setOptions({
+        header: () => <NavBar title={this.props.thread.topic} {...this.props} headerRight={this.renderHeaderRight} />,
+      })  
+    }
+  }
+
+  async sendMessage(text: string) {
+    const id = uuid()
+    
+    API.post(`threads/${this.props.thread.id}/messages`, { id, text }).catch(err => {
+      var msg: string;
+      switch(err.response?.status) {
+      case undefined:
+        msg = `Unexpected error: ${err}`;
+        break
+      case 400:
+        msg = `${err.response.data?.error}`;
+        break
+      default:
+        msg = `Unexpected error, status: ${err.response.status}`;
+      }
+          
+      Alert.alert("Error sending message", msg)
+      
+      const { group, thread, updateGroup } = this.props;
+      updateGroup({ ...group, threads: [
+        ...group.threads!.filter(t => t.id !== thread.id),
+        {
+          ...thread,
+          messages: thread.messages?.filter(m => m.id !== id),
+        },
+      ]})
+    })
+
+    const { group, thread, updateGroup } = this.props;
+    updateGroup({ ...group, threads: [
+      ...group.threads!.filter(t => t.id !== thread.id),
+      {
+        ...thread,
+        messages: [
+          ...(thread.messages || []),
+          {
+            id,
+            text,
+            author: group.members!.find(m => m.current_user),
+            sent_at: Date.now(),
+          },
+        ],
+      },
+    ]})
   }
 
   renderHeaderRight(): JSX.Element {
@@ -82,13 +140,13 @@ class RoomScreen extends React.Component<Props, State> {
     let inner = <View />
     switch(this.state.screen) {
     case 'chat':
-      inner = <Chat group messages={this.props.thread.messages || []} />;
+      inner = <Chat group messages={this.props.thread.messages || []} sendMessage={this.sendMessage} />;
       break;
     case 'video':
       inner = <Video navigation={this.props.navigation} />;
       break;
     case 'people':
-      inner = <People navigation={this.props.navigation} />;
+      inner = <People group={this.props.group} navigation={this.props.navigation} />;
       break;
     }
 
@@ -106,7 +164,13 @@ function mapStateToProps(state: GlobalState, ownProps: Props): any {
   return { group, thread }
 }
 
-export default connect(mapStateToProps)(RoomScreen)
+function mapDispatchToProps(dispatch: Function): any {
+  return {
+    updateGroup: (group: Group) => dispatch(SetGroup(group)),
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(RoomScreen)
 
 const styles = StyleSheet.create({
   headerRight: {

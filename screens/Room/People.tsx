@@ -2,8 +2,10 @@ import React from 'react';
 import { NavigationProp, RouteProp } from '@react-navigation/native';
 import { ScrollView, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { Colors, Fonts } from '../../globalStyles';
+import { Group } from '../../store/groups';
 
 interface Props {
+  group: Group;
   navigation: NavigationProp<{}>
 }
 
@@ -13,24 +15,15 @@ interface State {
 
 export default class People extends React.Component<Props, State> {
   render() {
-    const onPress = (title: string) => this.props.navigation.navigate('Chat', { title })
+    console.log("XXX",this.props.group.members)
+    const onPress = (user_id: string) => this.props.navigation.navigate('Chat', { group_id: this.props.group.id, user_id })
 
     return <ScrollView style={styles.container}>
-      <TouchableOpacity onPress={() => onPress('Asim Aslam')} style={[styles.row, { borderTopWidth: 1 }]}>
-        <Text style={styles.rowTitle}>Asim Aslam</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => onPress('Dom Wong')} style={styles.row}>
-        <Text style={styles.rowTitle}>Dom Wong</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => onPress('János Dobronszki')} style={styles.row}>
-        <Text style={styles.rowTitle}>János Dobronszki</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => onPress('Chris H')} style={styles.row}>
-        <Text style={styles.rowTitle}>Chris H</Text>
-      </TouchableOpacity>
+      { this.props.group.members?.map((m,i) => {
+        return <TouchableOpacity onPress={() => onPress(m.id)} style={[styles.row, { borderTopWidth: i === 0 ? 1 : 0 }]}>
+          <Text style={styles.rowTitle}>{m.first_name} {m.last_name}</Text>
+        </TouchableOpacity>
+      })}
     </ScrollView>
   }
 }

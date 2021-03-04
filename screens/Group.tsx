@@ -21,6 +21,7 @@ interface Props {
 
 interface State {
   loading: boolean;
+  websocket?: WebSocket;
 }
 
 class GroupScreen extends React.Component<Props, State> {
@@ -29,6 +30,7 @@ class GroupScreen extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
     this.loadData = this.loadData.bind(this)
+    this.setupWebsockets = this.setupWebsockets.bind(this)
     this.renderHeaderRight = this.renderHeaderRight.bind(this)
   }
 
@@ -52,7 +54,127 @@ class GroupScreen extends React.Component<Props, State> {
       .finally(() => {
         this.setState({ loading: false })
       })
+  }
 
+  componentDidUpdate(prevProps: Props, prevState: State) {
+    if(prevProps.group.name !== this.props.group.name) {
+      this.props.navigation.setOptions({
+        header: () => <NavBar title={this.props.group.name} {...this.props} headerRight={this.renderHeaderRight} />,
+      })  
+    }
+
+    if(prevProps.group.websocket === this.props.group.websocket) return
+    if(!this.props.group.websocket) return
+    this.setupWebsockets()
+  }
+
+  setupWebsockets() {
+    if(this.state.websocket) this.state.websocket.close()
+
+    const { websocket } = this.props.group;
+    var ws = new WebSocket(websocket!.url)
+
+    ws.onopen = event => {
+      console.log("Websocket opened")
+      ws.send(JSON.stringify({ token: websocket!.token, topic: websocket!.topic }))
+    }
+
+    ws.onmessage = (({ data }: any) => {
+      const { group, setGroup } = this.props
+
+      // todo: fix duplicate encoding?!
+      const event = JSON.parse(data)
+      const message = JSON.parse(JSON.parse(event.message))
+      if(message.group_id && message.group_id !== group.id) {
+        console.log("Ignoring message: ", message)
+        return
+      }
+      
+      switch(message.type) {
+      case 'group.updated':
+        console.log("Group updated:", message)
+        setGroup({ ...group, ...message })
+        break
+      case 'group.user.left':
+        console.log("User left group:", message)
+        if(message.payload.current_user) {
+          alert("You have been removed from the group")
+          window.location.href = '/'
+          return
+        }
+        setGroup({ ...group, members: group.members?.filter(m => m.id !== message.payload.id) })
+        break
+      case 'group.user.joined':
+        console.log("User joined group:", message)
+        setGroup({ ...group, members: [...group.members!, message.payload] })
+        break
+      case 'tread.created':
+        console.log("Thread created: ", message)
+        setGroup({ ...group, threads: [...group.threads!, message.payload] })
+        break
+      case 'thread.updated':
+        console.log("Thread updated: ", message)
+        setGroup({
+          ...group, threads: [
+            ...(group.threads || []).filter(t => t.id !== message.payload.id),
+            { ...(group.threads || []).find(t => t.id === message.payload.id), ...message.payload },
+          ],
+        })
+        break
+      case 'thread.deleted':
+        console.log("Thread deleted: ", message)
+        setGroup({ ...group, threads: group.threads?.filter(t => t.id !== message.payload.id) })
+        break
+      case 'message.created':
+        console.log("New message: ", message)
+        if(message.payload.chat.type === 'chat') {
+          const member = group.members!.find(t => t.id === message.payload.chat.id)!
+          setGroup({
+            ...group, members: [
+              ...group.members!.filter(t => t.id !== message.payload.chat.id),
+              {
+                ...member, chat: {
+                  ...member.chat,
+                  messages: [
+                    ...(member.chat.messages || []),
+                    message.payload.message,
+                  ],
+                }
+              }
+            ],
+          })  
+        } else if(message.payload.chat.type === 'thread') {
+          const thread = group.threads!.find(t => t.id === message.payload.chat.id)!
+          setGroup({
+            ...group, threads: [
+              ...group.threads!.filter(t => t.id !== message.payload.chat.id),
+              {
+                ...thread, messages: [
+                  ...(thread.messages || []),
+                  message.payload.message,
+                ],
+              },
+            ],
+          })  
+        }
+        break
+      }
+    }).bind(this)
+
+    ws.onclose = () => {
+      console.log("Websocket closed")
+    }
+    
+    ws.onerror = () => {
+      console.log("Websocket errored")
+      this.setupWebsockets()
+    }
+
+    this.setState({ websocket: ws })
+  }
+
+  componentWillUnmount() {
+    if(this.state.websocket) this.state.websocket.close()
   }
 
   renderHeaderRight(): JSX.Element {

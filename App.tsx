@@ -7,6 +7,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import AppLoading from 'expo-app-loading';
 import * as SecureStore from 'expo-secure-store';
+import 'react-native-get-random-values';
 
 // Screens
 import LoginScreen from './screens/Login/Login';

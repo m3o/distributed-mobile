@@ -26,9 +26,7 @@ export default class Video extends React.Component<Props> {
   }
 
   renderPerson(name: string, imgSrc: ImageSourcePropType): JSX.Element {
-    const onPress = () => this.props.navigation.navigate('Chat', { title: name })
-
-    return <TouchableOpacity onPress={onPress} style={styles.person}>
+    return <TouchableOpacity style={styles.person}>
       <Image style={styles.image} source={imgSrc} />
       <Text style={styles.name}>{name}</Text>
     </TouchableOpacity>
