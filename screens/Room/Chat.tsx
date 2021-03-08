@@ -153,6 +153,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     marginBottom: 12,
+    flexShrink: 1,
   },
   messageSender: {
     marginLeft: 20,
