@@ -147,7 +147,7 @@ class HomeScreen extends React.Component<Props, State> {
           <Text style={styles.rowSubtitle}>{onlineStatus}</Text>
         </View>
         <View style={styles.rowImageContainer}>
-          { people.map(p => <Image style={styles.rowImage} source={p} />)}
+          { people.map((p,i) => <Image key={i} style={styles.rowImage} source={p} />)}
         </View>
       </TouchableOpacity>
     )

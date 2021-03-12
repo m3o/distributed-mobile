@@ -143,7 +143,7 @@ class RoomScreen extends React.Component<Props, State> {
       inner = <Chat group messages={this.props.thread.messages || []} sendMessage={this.sendMessage} />;
       break;
     case 'video':
-      inner = <Video navigation={this.props.navigation} />;
+      inner = <Video thread={this.props.thread} group={this.props.group} navigation={this.props.navigation} />;
       break;
     case 'people':
       inner = <People group={this.props.group} navigation={this.props.navigation} />;

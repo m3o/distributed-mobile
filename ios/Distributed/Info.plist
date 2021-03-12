@@ -63,5 +63,9 @@
     <true/>
     <key>CFBundleDisplayName</key>
     <string>Distributed</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Distributed needs access to your camera so you can join video calls</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Distributed needs access to your microphone so you can join video and audio calls</string>
   </dict>
 </plist>
