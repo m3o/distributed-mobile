@@ -5,7 +5,8 @@
     "ios": "react-native run-ios",
     "web": "expo start --web",
     "eject": "expo eject",
-    "debug": "open \"rndebugger://set-debugger-loc?host=localhost&port=19000\""
+    "debug": "open \"rndebugger://set-debugger-loc?host=localhost&port=19000\"",
+    "postinstall" : "npx jetify"
   },
   "dependencies": {
     "@expo/react-native-action-sheet": "^3.8.0",
@@ -42,6 +43,7 @@
     "@types/react-native": "~0.63.2",
     "babel-jest": "~25.2.6",
     "jest": "~25.2.6",
+    "jetifier": "^1.6.6",
     "react-test-renderer": "~16.13.1",
     "typescript": "~4.0.0"
   },
