@@ -167,7 +167,7 @@ export default class Video extends React.Component<Props, State> {
     if(p.identity === this.state.identity) {
       inner = <TwilioVideoLocalView enabled={true} style={styles.video} />;
     } else if (p.videoTrackSid?.length) {
-      inner = <TwilioVideoParticipantView trackIdentifier={{ participantSid: p.sid, videoTrackSid: p.videoTrackSid }} style={[styles.video, styles.videoRemote} />
+      inner = <TwilioVideoParticipantView trackIdentifier={{ participantSid: p.sid, videoTrackSid: p.videoTrackSid }} style={[styles.video, styles.videoRemote]} />
     } else {
       inner = <Image source={Person1} style={styles.video} />
     }

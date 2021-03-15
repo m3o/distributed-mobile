@@ -3,14 +3,11 @@ import { connect } from 'react-redux';
 import { NavigationProp, RouteProp } from '@react-navigation/native';
 import { View, ScrollView, Text, StyleSheet, TouchableOpacity, Image, RefreshControl } from 'react-native';
 import { Colors, Fonts } from '../globalStyles';
-import Person1 from '../assets/person1.png';
-import Person2 from '../assets/person2.png';
-import Person3 from '../assets/person3.png';
-import Person4 from '../assets/person4.png';
 import NavBar from '../components/NavBar';
 import { Group, SetGroup } from '../store/groups';
 import { GlobalState } from '../store';
 import API from '../api';
+import Person from '../components/Person';
 
 interface Props {
   route: RouteProp<any,any>
@@ -179,10 +176,7 @@ class GroupScreen extends React.Component<Props, State> {
 
   renderHeaderRight(): JSX.Element {
     return <View style={styles.headerRight}>
-      <Image style={styles.headerRightImage} source={Person1} />
-      <Image style={styles.headerRightImage} source={Person2} />
-      <Image style={styles.headerRightImage} source={Person3} />
-      <Image style={styles.headerRightImage} source={Person4} />
+      { this.props.group.members?.slice(0, 3)?.map(p => <Person user={p} />)}
     </View>
   }
   
