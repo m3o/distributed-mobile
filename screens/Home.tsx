@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { NavigationProp, RouteProp } from '@react-navigation/native';
-import { View, ScrollView, Text, StyleSheet, TouchableOpacity, Image, RefreshControl, ImageSourcePropType } from 'react-native';
+import { View, ScrollView, Text, StyleSheet, TouchableOpacity, Image, RefreshControl, ImageSourcePropType, Alert } from 'react-native';
 import { connectActionSheet, ActionSheetOption } from '@expo/react-native-action-sheet';
 import * as SecureStore from 'expo-secure-store';
 import { Colors, Fonts } from '../globalStyles';
@@ -35,6 +35,19 @@ class HomeScreen extends React.Component<Props, State> {
     this.showProfileMenu = this.showProfileMenu.bind(this)
     this.renderHeaderRight = this.renderHeaderRight.bind(this)
     this.renderGroup = this.renderGroup.bind(this)
+    this.createNewGroup = this.createNewGroup.bind(this)
+  }
+
+  createNewGroup() {
+    Alert.prompt(
+      "Create group",
+      "Enter the name for the group",
+      name => {
+        API.post('/groups', { name })
+          .then(this.loadData)
+          .catch(err => Alert.alert("Error creating group", err))
+      },
+    )
   }
 
   showProfileMenu() {
@@ -91,7 +104,7 @@ class HomeScreen extends React.Component<Props, State> {
       <Text style={styles.sectionHeader}>Groups</Text>
       { groups?.map(this.renderGroup) }
       
-      <TouchableOpacity style={styles.row}>
+      <TouchableOpacity style={styles.row} onPress={this.createNewGroup}>
         <Text style={styles.rowNewTitle}>Create a new group</Text>
       </TouchableOpacity>
     </ScrollView>

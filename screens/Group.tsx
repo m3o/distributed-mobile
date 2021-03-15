@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { NavigationProp, RouteProp } from '@react-navigation/native';
-import { View, ScrollView, Text, StyleSheet, TouchableOpacity, Image, RefreshControl } from 'react-native';
+import { View, ScrollView, Text, StyleSheet, TouchableOpacity, Image, RefreshControl, Alert } from 'react-native';
 import { Colors, Fonts } from '../globalStyles';
 import NavBar from '../components/NavBar';
 import { Group, SetGroup } from '../store/groups';
@@ -29,6 +29,32 @@ class GroupScreen extends React.Component<Props, State> {
     this.loadData = this.loadData.bind(this)
     this.setupWebsockets = this.setupWebsockets.bind(this)
     this.renderHeaderRight = this.renderHeaderRight.bind(this)
+    this.createNewRoom = this.createNewRoom.bind(this)
+    this.sendInvite = this.sendInvite.bind(this)
+  }
+
+  createNewRoom() {
+    Alert.prompt(
+      "Create room",
+      "Enter the name for the room",
+      topic => {
+        API.post(`/groups/${this.props.group.id}/threads`, { topic })
+          .then(this.loadData)
+          .catch(err => Alert.alert("Error creating room", err))
+      },
+    )
+  }
+
+  sendInvite() {
+    Alert.prompt(
+      "Send invite",
+      "Enter the email address of the user you would like to invite",
+      email => {
+        API.post(`/groups/${this.props.group.id}/invites`, { email })
+          .then(() => Alert.alert(`Invite sent to ${email}`))
+          .catch(err => Alert.alert("Error sending invite", err))
+      },
+    )
   }
 
   componentDidMount() {
@@ -193,10 +219,13 @@ class GroupScreen extends React.Component<Props, State> {
         return(
           <TouchableOpacity key={t.id} onPress={onClick} style={[styles.row, { borderTopWidth: i === 0 ? 1 : 0 }]}>
             <Text style={styles.rowTitle}>{t.topic}</Text>
-            <Text style={styles.rowSubtitle}>12 members online</Text>
           </TouchableOpacity>
         )
       }) }
+
+      <TouchableOpacity style={styles.row} onPress={this.createNewRoom}>
+        <Text style={styles.rowNewTitle}>Create a new room</Text>
+      </TouchableOpacity>
       
       <Text style={styles.sectionHeader}>👨‍👩‍👦 People</Text>
 
@@ -209,6 +238,10 @@ class GroupScreen extends React.Component<Props, State> {
           </TouchableOpacity>
         )
       }) }
+
+      <TouchableOpacity style={styles.row} onPress={this.sendInvite}>
+        <Text style={styles.rowNewTitle}>Send invite</Text>
+      </TouchableOpacity>
     </ScrollView>
   }
 }
