@@ -3,11 +3,11 @@ import { StyleSheet, Text, View } from "react-native";
 import { Colors, Fonts } from "../globalStyles";
 import { User } from "../store/user";
 
-export default function Person(props: { user: User }): JSX.Element {
+export default function Person(props: { user: User, styles?: any }): JSX.Element {
   const { first_name, last_name } = props.user;
   const initials = `${first_name?.slice(0,1)}${last_name?.slice(0,1)}`
 
-  return <View style={styles.container}>
+  return <View style={[styles.container, props.styles || {}]}>
     <Text style={styles.text}>{initials}</Text>
   </View>
 }
