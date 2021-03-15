@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import { NavigationProp, RouteProp } from '@react-navigation/native';
 import { View, StyleSheet, Image, Alert } from 'react-native';
 import { Colors } from '../globalStyles';
-import Person1 from '../assets/person1.png';
 import NavBar from '../components/NavBar';
 import Chat from './Room/Chat';
 import { GlobalState } from '../store';
@@ -11,6 +10,7 @@ import { User } from '../store/user';
 import { v4 as uuid } from 'uuid';
 import API from '../api';
 import { Group, SetGroup } from '../store/groups';
+import Person from '../components/Person';
 
 interface Props {
   route: RouteProp<any,any>
@@ -44,7 +44,7 @@ class ChatScreen extends React.Component<Props, State> {
 
   renderHeaderRight(): JSX.Element {
     return <View style={styles.headerRight}>
-      <Image style={styles.headerRightImage} source={Person1} />
+      <Person user={this.props.user} />
     </View>
   }
 

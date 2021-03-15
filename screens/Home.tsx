@@ -1,20 +1,17 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { NavigationProp, RouteProp } from '@react-navigation/native';
-import { View, ScrollView, Text, StyleSheet, TouchableOpacity, Image, RefreshControl, ImageSourcePropType } from 'react-native';
+import { View, ScrollView, Text, StyleSheet, TouchableOpacity, Image, RefreshControl, ImageSourcePropType, Alert } from 'react-native';
 import { connectActionSheet, ActionSheetOption } from '@expo/react-native-action-sheet';
 import * as SecureStore from 'expo-secure-store';
 import { Colors, Fonts } from '../globalStyles';
 import Profile from '../assets/profile.png';
-import Person1 from '../assets/person1.png';
-import Person2 from '../assets/person2.png';
-import Person3 from '../assets/person3.png';
-import Person4 from '../assets/person4.png';
 import NavBar from '../components/NavBar';
 import { Logout } from '../store/user';
 import API from '../api';
 import { Group, SetGroups } from '../store/groups';
 import { GlobalState } from '../store';
+import Person from '../components/Person';
 
 interface Props {
   route: RouteProp<any, any>
@@ -38,14 +35,27 @@ class HomeScreen extends React.Component<Props, State> {
     this.showProfileMenu = this.showProfileMenu.bind(this)
     this.renderHeaderRight = this.renderHeaderRight.bind(this)
     this.renderGroup = this.renderGroup.bind(this)
+    this.createNewGroup = this.createNewGroup.bind(this)
+  }
+
+  createNewGroup() {
+    Alert.prompt(
+      "Create group",
+      "Enter the name for the group",
+      name => {
+        API.post('/groups', { name })
+          .then(this.loadData)
+          .catch(err => Alert.alert("Error creating group", err))
+      },
+    )
   }
 
   showProfileMenu() {
     this.props.showActionSheetWithOptions(
       {
-        options: ['Edit Profile', 'Logout', 'Cancel'],
-        destructiveButtonIndex: 1,
-        cancelButtonIndex: 2,
+        options: ['Logout', 'Cancel'],
+        destructiveButtonIndex: 0,
+        cancelButtonIndex: 1,
       },
       idx => {
         switch(idx) {
@@ -94,60 +104,23 @@ class HomeScreen extends React.Component<Props, State> {
       <Text style={styles.sectionHeader}>Groups</Text>
       { groups?.map(this.renderGroup) }
       
-      <TouchableOpacity style={styles.row}>
+      <TouchableOpacity style={styles.row} onPress={this.createNewGroup}>
         <Text style={styles.rowNewTitle}>Create a new group</Text>
-      </TouchableOpacity>
-
-      <Text style={styles.sectionHeader}>Upcoming Events</Text>
-      
-      <TouchableOpacity style={[styles.row, { borderTopWidth: 1 }]}>
-        <View>
-          <Text style={styles.rowTitle}>Standup</Text>
-          <Text style={styles.rowSubtitle}>Starts in 4 minutes</Text>
-        </View>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.row}>
-        <View>
-          <Text style={styles.rowTitle}>Family Quiz Night</Text>
-          <Text style={styles.rowSubtitle}>Starts tonight at 8pm</Text>
-        </View>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.row}>
-        <Text style={styles.rowNewTitle}>Create a new event</Text>
       </TouchableOpacity>
     </ScrollView>
   }
 
   renderGroup(group: Group, index: number): JSX.Element {
-    var onlineStatus: string;
-    var people: ImageSourcePropType[];
-    switch(index) {
-    case 0:
-      onlineStatus = '12 members online';
-      people = [Person1, Person2, Person3, Person4];
-      break;
-    case 1:
-      onlineStatus = '2 members online';
-      people = [Person1, Person2];
-      break;
-    default:
-      onlineStatus = 'No members online';
-      people = [];
-      break;
-    }
-
     const onClick = () => this.props.navigation.navigate('Group', { id: group.id })
 
     return (
       <TouchableOpacity key={group.id} onPress={onClick} style={[styles.row, { borderTopWidth: index === 0 ? 1 : 0 }]}>
         <View>
           <Text style={styles.rowTitle}>{group.name}</Text>
-          <Text style={styles.rowSubtitle}>{onlineStatus}</Text>
+          <Text style={styles.rowSubtitle}>{group.members?.length || 0} members</Text>
         </View>
         <View style={styles.rowImageContainer}>
-          { people.map(p => <Image style={styles.rowImage} source={p} />)}
+          { group.members?.slice(0, 3)?.map(p => <Person user={p} />)}
         </View>
       </TouchableOpacity>
     )

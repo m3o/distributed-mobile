@@ -3,10 +3,6 @@ import { connect } from 'react-redux';
 import { NavigationProp, RouteProp } from '@react-navigation/native';
 import { View, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
 import { Colors } from '../../globalStyles';
-import Person1 from '../../assets/person1.png';
-import Person2 from '../../assets/person2.png';
-import Person3 from '../../assets/person3.png';
-import Person4 from '../../assets/person4.png';
 import PeopleIcon from '../../assets/people.png';
 import VideoIcon from '../../assets/video.png';
 import ChatIcon from '../../assets/chat.png';
@@ -21,6 +17,7 @@ import { GlobalState } from '../../store';
 import { Group, SetGroup, Thread } from '../../store/groups';
 import API from '../../api';
 import { v4 as uuid } from 'uuid';
+import Person from '../../components/Person';
 
 interface Props {
   route: RouteProp<any,any>
@@ -105,10 +102,7 @@ class RoomScreen extends React.Component<Props, State> {
 
   renderHeaderRight(): JSX.Element {
     return <View style={styles.headerRight}>
-      <Image style={styles.headerRightImage} source={Person1} />
-      <Image style={styles.headerRightImage} source={Person2} />
-      <Image style={styles.headerRightImage} source={Person3} />
-      <Image style={styles.headerRightImage} source={Person4} />
+      { this.props.group.members?.slice(0, 3)?.map(p => <Person user={p} />)}
     </View>
   }
 
@@ -143,7 +137,7 @@ class RoomScreen extends React.Component<Props, State> {
       inner = <Chat group messages={this.props.thread.messages || []} sendMessage={this.sendMessage} />;
       break;
     case 'video':
-      inner = <Video navigation={this.props.navigation} />;
+      inner = <Video thread={this.props.thread} group={this.props.group} navigation={this.props.navigation} />;
       break;
     case 'people':
       inner = <People group={this.props.group} navigation={this.props.navigation} />;
