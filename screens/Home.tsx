@@ -120,7 +120,7 @@ class HomeScreen extends React.Component<Props, State> {
           <Text style={styles.rowSubtitle}>{group.members?.length || 0} members</Text>
         </View>
         <View style={styles.rowImageContainer}>
-          { group.members?.slice(0, 3)?.map(p => <Person user={p} />)}
+          { group.members?.slice(0, 3)?.map(p => <Person key={p.id} user={p} />)}
         </View>
       </TouchableOpacity>
     )

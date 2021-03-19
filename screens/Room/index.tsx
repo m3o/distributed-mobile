@@ -102,7 +102,7 @@ class RoomScreen extends React.Component<Props, State> {
 
   renderHeaderRight(): JSX.Element {
     return <View style={styles.headerRight}>
-      { this.props.group.members?.slice(0, 3)?.map(p => <Person user={p} />)}
+      { this.props.group.members?.slice(0, 3)?.map(p => <Person key={p.id} user={p} />)}
     </View>
   }
 

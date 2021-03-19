@@ -6,13 +6,11 @@ import {
   TwilioVideo,
   TwilioVideoParticipantView,
 } from 'react-native-twilio-video-webrtc'
-import Person1 from '../../assets/person1.png'
-// import Person2 from '../../assets/person2.png'
-// import Person3 from '../../assets/person3.png'
-// import Person4 from '../../assets/person4.png'
 import { Fonts } from '../../globalStyles'
 import { Group, Thread } from '../../store/groups'
 import API from '../../api'
+import * as Permissions from 'expo-permissions';
+import Person from '../../components/Person'
 
 interface Props {
   group: Group
@@ -52,6 +50,8 @@ export default class Video extends React.Component<Props, State> {
 
   componentDidMount() {
     this.fetchToken()
+    console.log("Asking for permissions")
+    Permissions.askAsync(Permissions.CAMERA, Permissions.AUDIO_RECORDING);
   }
 
   async componentWillUnmount() { 
@@ -169,7 +169,7 @@ export default class Video extends React.Component<Props, State> {
     } else if (p.videoTrackSid?.length) {
       inner = <TwilioVideoParticipantView trackIdentifier={{ participantSid: p.sid, videoTrackSid: p.videoTrackSid }} style={[styles.video, styles.videoRemote]} />
     } else {
-      inner = <Image source={Person1} style={styles.video} />
+      inner = <Person user={user!} />
     }
 
     return <View key={p.identity} style={styles.person}>
