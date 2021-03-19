@@ -1,7 +1,7 @@
 import React, { createRef } from 'react';
 import { View, Image, Platform, StyleSheet, TextInput, SafeAreaView, KeyboardAvoidingView, Dimensions, Text, FlatList, Keyboard, NativeSyntheticEvent, TextInputSubmitEditingEventData } from 'react-native';
+import Person from '../../components/Person';
 import { Colors, Fonts } from '../../globalStyles';
-import Person1 from '../../assets/person1.png';
 import { Message } from '../../store/groups';
 
 interface Props {
@@ -86,7 +86,7 @@ export default class Chat extends React.Component<Props,State> {
 
     if(this.props.group) {
       return <View key={item.id} style={styles.messageContainer}>
-        <Image style={styles.messageIcon} source={Person1} />
+        <Person styles={{marginLeft: 10, marginRight: -5, marginTop: 'auto', marginBottom: 10 }} user={item.author!} />
         <View>
           <Text style={styles.messageSender}>{item.author?.first_name} {item.author?.last_name}</Text>
           <View style={[styles.messageTextContainer, styles.messageTextContainerRecipient]}>

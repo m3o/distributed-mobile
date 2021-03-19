@@ -6,13 +6,11 @@ import {
   TwilioVideo,
   TwilioVideoParticipantView,
 } from 'react-native-twilio-video-webrtc'
-import Person1 from '../../assets/person1.png'
-// import Person2 from '../../assets/person2.png'
-// import Person3 from '../../assets/person3.png'
-// import Person4 from '../../assets/person4.png'
 import { Fonts } from '../../globalStyles'
 import { Group, Thread } from '../../store/groups'
 import API from '../../api'
+import * as Permissions from 'expo-permissions';
+import Person from '../../components/Person'
 
 interface Props {
   group: Group
@@ -26,6 +24,7 @@ interface State {
   token?: string
   identity?: string
   participants?: Participant[]
+  permissions?: Permissions.PermissionStatus;
 }
 
 interface Participant {
@@ -50,8 +49,14 @@ export default class Video extends React.Component<Props, State> {
     this.onParticipantRemovedVideoTrack = this.onParticipantRemovedVideoTrack.bind(this)
   }
 
-  componentDidMount() {
-    this.fetchToken()
+  async componentDidMount() {
+    const { status } = await Permissions.askAsync(Permissions.CAMERA, Permissions.AUDIO_RECORDING);
+    this.setState({ permissions: status })
+    if(status !== Permissions.PermissionStatus.GRANTED) {
+      Alert.alert("Missing Permissions", "Please enable audio / video permissions and then try again")
+    } else {
+      this.fetchToken()
+    }
   }
 
   async componentWillUnmount() { 
@@ -137,6 +142,8 @@ export default class Video extends React.Component<Props, State> {
   }
 
   render(): JSX.Element {
+    if(this.state.permissions !== Permissions.PermissionStatus.GRANTED) return <ScrollView />
+
     const participants = this.state.participants?.sort((a,b) => {
       const userA = this.props.group.members?.find(m => m.id === a.identity);
       const userB = this.props.group.members?.find(m => m.id === b.identity);
@@ -169,7 +176,7 @@ export default class Video extends React.Component<Props, State> {
     } else if (p.videoTrackSid?.length) {
       inner = <TwilioVideoParticipantView trackIdentifier={{ participantSid: p.sid, videoTrackSid: p.videoTrackSid }} style={[styles.video, styles.videoRemote]} />
     } else {
-      inner = <Image source={Person1} style={styles.video} />
+      inner = <Person user={user!} />
     }
 
     return <View key={p.identity} style={styles.person}>
