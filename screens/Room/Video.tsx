@@ -24,6 +24,7 @@ interface State {
   token?: string
   identity?: string
   participants?: Participant[]
+  permissions?: Permissions.PermissionStatus;
 }
 
 interface Participant {
@@ -48,10 +49,14 @@ export default class Video extends React.Component<Props, State> {
     this.onParticipantRemovedVideoTrack = this.onParticipantRemovedVideoTrack.bind(this)
   }
 
-  componentDidMount() {
-    this.fetchToken()
-    console.log("Asking for permissions")
-    Permissions.askAsync(Permissions.CAMERA, Permissions.AUDIO_RECORDING);
+  async componentDidMount() {
+    const { status } = await Permissions.askAsync(Permissions.CAMERA, Permissions.AUDIO_RECORDING);
+    this.setState({ permissions: status })
+    if(status !== Permissions.PermissionStatus.GRANTED) {
+      Alert.alert("Missing Permissions", "Please enable audio / video permissions and then try again")
+    } else {
+      this.fetchToken()
+    }
   }
 
   async componentWillUnmount() { 
@@ -137,6 +142,8 @@ export default class Video extends React.Component<Props, State> {
   }
 
   render(): JSX.Element {
+    if(this.state.permissions !== Permissions.PermissionStatus.GRANTED) return <ScrollView />
+
     const participants = this.state.participants?.sort((a,b) => {
       const userA = this.props.group.members?.find(m => m.id === a.identity);
       const userB = this.props.group.members?.find(m => m.id === b.identity);
