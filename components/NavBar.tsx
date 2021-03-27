@@ -23,8 +23,8 @@ export default function NavBar (props: Props) {
   }
 
   return <SafeAreaView style={[styles.container, props.noShadow ? { elevation: 0 } : {}]}>
-    { backButton }
     <View style={styles.lower}>
+      { backButton }
       <Text style={styles.title}>{props.title || props.route.params?.title || 'Distributed'}</Text>
       { props.headerRight ? props.headerRight() : null }
     </View>
@@ -37,7 +37,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: Device.osName === 'Android' ? 20 : 0,
     marginHorizontal: Device.osName === 'Android' ? 0 : 20,
     elevation: 5,
-    height: 160,
+    height: 60,
+    paddingTop: 10,
   },
   backButton: {
     marginTop: 'auto',
@@ -46,11 +47,11 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     width: 30,
     height: 30,
-    marginBottom: 15,
+    marginRight: 15,
     marginTop: 'auto',
   },
   title: {
-    fontSize: 30,
+    fontSize: 24,
     fontFamily: Fonts.Bold,
     flexGrow: 1,
     flexShrink: 1,

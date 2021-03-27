@@ -8,6 +8,7 @@ import { Group, SetGroup } from '../store/groups';
 import { GlobalState } from '../store';
 import API from '../api';
 import Person from '../components/Person';
+import prompt from 'react-native-prompt-android';
 
 interface Props {
   route: RouteProp<any,any>
@@ -34,7 +35,7 @@ class GroupScreen extends React.Component<Props, State> {
   }
 
   createNewRoom() {
-    Alert.prompt(
+    prompt(
       "Create room",
       "Enter the name for the room",
       topic => {
@@ -46,7 +47,7 @@ class GroupScreen extends React.Component<Props, State> {
   }
 
   sendInvite() {
-    Alert.prompt(
+    prompt(
       "Send invite",
       "Enter the email address of the user you would like to invite",
       email => {

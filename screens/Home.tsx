@@ -12,6 +12,7 @@ import API from '../api';
 import { Group, SetGroups } from '../store/groups';
 import { GlobalState } from '../store';
 import Person from '../components/Person';
+import prompt from 'react-native-prompt-android';
 
 interface Props {
   route: RouteProp<any, any>
@@ -39,7 +40,7 @@ class HomeScreen extends React.Component<Props, State> {
   }
 
   createNewGroup() {
-    Alert.prompt(
+    prompt(
       "Create group",
       "Enter the name for the group",
       name => {
@@ -59,7 +60,7 @@ class HomeScreen extends React.Component<Props, State> {
       },
       idx => {
         switch(idx) {
-        case 1:
+        case 0:
           SecureStore.deleteItemAsync('token')
           this.props.logout()
         }
